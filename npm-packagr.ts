@@ -10,13 +10,11 @@ import {
     version,
 } from "npm-packagr/pipes";
 
-let packageName = "";
+const message = require("./package.json").name;
 
 npmPackagr({
     pipeline: [
         packageJSON(packageJson => {
-            packageName = packageJson.name!;
-
             const dependencies = packageJson.devDependencies!;
 
             packageJson.dependencies = {
@@ -28,7 +26,7 @@ npmPackagr({
             delete packageJson.scripts;
         }),
 
-        git("commit", packageName),
+        git("commit", message),
 
         ({ exec, packageDirectory }) => {
             exec(`tsc --outDir ${packageDirectory}`);
@@ -46,7 +44,7 @@ npmPackagr({
 
         assets("LICENSE", "README.md"),
 
-        git("commit", packageName),
+        git("commit", message),
         git("push"),
 
         publish({
