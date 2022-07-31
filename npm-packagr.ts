@@ -17,8 +17,11 @@ npmPackagr({
         packageJSON(packageJson => {
             packageName = packageJson.name!;
 
+            const dependencies = packageJson.devDependencies!;
+
             packageJson.dependencies = {
-                // TODO: pick value-accessor
+                "logical-not": dependencies["logical-not"],
+                "value-accessor": dependencies["value-accessor"],
             };
 
             delete packageJson.devDependencies;
@@ -31,7 +34,7 @@ npmPackagr({
             exec(`tsc --outDir ${packageDirectory}`);
         },
 
-        test(),
+        // test(),
 
         badge(BadgeType.Test),
         badge(BadgeType.License),
@@ -47,7 +50,10 @@ npmPackagr({
         git("push"),
 
         publish({
-            login: { account: "observable.lib", email: "...@gmail.com" },
+            login: {
+                account: "observable.lib",
+                email: "observable.lib@gmail.com",
+            },
         }),
     ],
 });
