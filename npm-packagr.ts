@@ -34,7 +34,7 @@ npmPackagr({
             exec(`tsc --outDir ${packageDirectory}`);
         },
 
-        // test(),
+        test(),
 
         badge(BadgeType.Test),
         badge(BadgeType.License),
