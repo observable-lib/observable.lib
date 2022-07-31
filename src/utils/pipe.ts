@@ -1,8 +1,8 @@
-import { Observable, ObserverActions, Subscriber } from "../core";
+import { Observable, MediatorActions, Subscriber } from "../core";
 import { create } from "./create";
 
 export interface PipeHandler<In, Out> {
-    (actions: ObserverActions<Out extends unknown ? In : Out>): Partial<
+    (actions: MediatorActions<Out extends unknown ? In : Out>): Partial<
         Subscriber<In>
     >;
 }

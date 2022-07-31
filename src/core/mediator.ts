@@ -2,22 +2,22 @@ import { Observable } from "./observable";
 import { Subscriber } from "./subscriber";
 import { Subscription } from "./subscription";
 
-export type ObserverActions<T> = Pick<
-    Observer<T>,
+export type MediatorActions<T> = Pick<
+    Mediator<T>,
     "next" | "error" | "complete"
 >;
 
-export class Observer<T> extends Observable<T> {
+export class Mediator<T> extends Observable<T> {
     get closed() {
         return this.#closed;
     }
 
     #closed = false;
-    #items = new Set<ObserverItem<T>>();
+    #items = new Set<Item<T>>();
 
     constructor() {
         super(subscriber => {
-            const item: ObserverItem<T> = {
+            const item: Item<T> = {
                 subscriber,
                 subscription: new Subscription(() => {
                     this.#items.delete(item);
@@ -80,7 +80,7 @@ export class Observer<T> extends Observable<T> {
     }
 }
 
-interface ObserverItem<T> {
+interface Item<T> {
     subscriber: Subscriber<T>;
     subscription: Subscription;
 }

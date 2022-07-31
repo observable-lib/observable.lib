@@ -34,12 +34,22 @@ function fn<T extends (...args: any[]) => void>(source?: T): T {
 export interface Observable<T> {
     debounce(ms: number): Observable<T>;
     distinct(): Observable<T>;
-    filter(predicate: (value: T) => boolean): Observable<T>;
+    filter(predicate: Extensions.Predicate<T>): Observable<T>;
+    first(): Observable<T>;
+    last(): Observable<T>;
     map<U>(callback: (value: T) => U): Observable<U>;
     onComplete(callback: () => void): Observable<T>;
     onError(callback: <Error>(error: Error) => void): Observable<T>;
     onFinalize(callback: () => void): Observable<T>;
     onNext(callback: (value: T) => void): Observable<T>;
     onSubscribe(callback: () => void): Observable<T>;
+    skip(quantity: number): Observable<T>;
     switch<U>(callback: (value: T) => Observable<U>): Observable<U>;
+    take(quantity: number): Observable<T>;
+}
+
+export namespace Extensions {
+    export interface Predicate<T> {
+        (value: T): boolean;
+    }
 }

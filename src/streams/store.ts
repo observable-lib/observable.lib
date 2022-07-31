@@ -1,6 +1,6 @@
 import { ValueAccessor } from "value-accessor";
 
-import { Observer } from "../core";
+import { Mediator } from "../core";
 import { Stream } from "./stream";
 
 export class Store<T> extends Stream<T> {
@@ -10,12 +10,12 @@ export class Store<T> extends Stream<T> {
 
     #valueAccessor: ValueAccessor<T>;
 
-    constructor(observer: Observer<T>, initial: T) {
+    constructor(mediator: Mediator<T>, initial: T) {
         const valueAccessor = new ValueAccessor<T>();
 
         valueAccessor.value = initial;
 
-        super(observer, valueAccessor);
+        super(mediator, valueAccessor);
 
         this.#valueAccessor = valueAccessor;
     }

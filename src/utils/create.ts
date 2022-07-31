@@ -1,40 +1,40 @@
 import {
     Finalize,
     Observable,
-    Observer,
-    ObserverActions,
+    Mediator,
+    MediatorActions,
     Subscription,
 } from "../core";
 
 export interface ObservableFactory<T> {
-    (actions: ObserverActions<T>): Subscription | Finalize | void;
+    (actions: MediatorActions<T>): Subscription | Finalize | void;
 }
 
 export function create<T>(factory: ObservableFactory<T>): Observable<T> {
     return new Observable<T>(actions => {
-        const observer = new Observer<T>();
-        const observerSubscription = observer.subscribe(actions);
+        const mediator = new Mediator<T>();
+        const mediatorSubscription = mediator.subscribe(actions);
 
         const teardownSource = factory({
             next(value) {
-                observer.next(value);
+                mediator.next(value);
             },
             error(error) {
-                observer.error(error);
+                mediator.error(error);
             },
             complete() {
-                observer.complete();
+                mediator.complete();
             },
         });
 
         const teardown = pickTeardown(teardownSource) || (() => {});
         const subscription = new Subscription(() => {
-            observerSubscription.unsubscribe();
+            mediatorSubscription.unsubscribe();
 
             teardown();
         });
 
-        if (observer.closed) subscription.unsubscribe();
+        if (mediator.closed) subscription.unsubscribe();
 
         return subscription;
     });

@@ -5,3 +5,4 @@ export * from "./on-complete";
 export * from "./on-next";
 export * from "./on.interfaces";
 export * from "./pipe";
+export * from "./subscriptions";

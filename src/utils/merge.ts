@@ -9,6 +9,6 @@ export function merge<T>(...observables: Observable<T>[]): Observable<T> {
             observables.map(item => item.subscribe(subscriber)),
         );
 
-        return new Subscription(() => subscriptions.destroy());
+        return new Subscription(() => subscriptions.unsubscribe());
     });
 }
