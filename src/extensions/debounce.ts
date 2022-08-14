@@ -1,5 +1,4 @@
 import { Observable } from "../core";
-import { pipe } from "../utils";
 
 class Store {
     hasValue = false;
@@ -20,7 +19,7 @@ class Store {
 }
 
 Observable.prototype.debounce = function (ms) {
-    return pipe(this, ({ next, complete }) => {
+    return this.pipe(({ next, complete }) => {
         const store = new Store();
 
         let timer: ReturnType<typeof setTimeout>;

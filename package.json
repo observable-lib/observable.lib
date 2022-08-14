@@ -22,6 +22,7 @@
         "prepublishOnly": "exit 0",
         "pretest": "tsc -p test-src/tsconfig.test.json",
         "pub": "packagr",
+        "start": "npx tsc --outDir package --sourceMap --watch",
         "test": "jest --config test/jest.config.js"
     },
     "devDependencies": {
@@ -31,6 +32,6 @@
         "npm-packagr": "^1.0.51",
         "prettier": "^2.7.1",
         "typescript": "^4.7.4",
-        "value-accessor": "^1.0.0"
+        "value-accessor": "^1.0.3"
     }
 }

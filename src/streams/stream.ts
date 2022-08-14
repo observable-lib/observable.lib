@@ -1,31 +1,48 @@
-import { ValueAccessor } from "value-accessor";
+import { Finalize, Observable, Observer } from "../core";
 
-import { Observable, Mediator, Subscriber, Subscription } from "../core";
+export interface Emitter<T> {
+    (value: T): void;
+}
 
 export class Stream<T> extends Observable<T> {
-    constructor(mediator: Mediator<T>, valueAccessor?: ValueAccessor<T>) {
-        super(subscriber => {
-            subscribers.add(subscriber);
+    static createEmitter<T>(): Emitter<T> {
+        const emitter: Emitter<T> = value => {
+            const stream = Stream.#streams.get(emitter);
 
-            const subscription = new Subscription(() => {
-                subscribers.delete(subscriber);
-            });
+            if (stream) stream.#next(value);
+        };
 
-            if (valueAccessor?.hasValue) subscriber.next(valueAccessor.value);
+        return emitter;
+    }
 
-            return subscription;
+    static #streams = new WeakMap<Emitter<any>, Stream<any>>();
+
+    #observers = new Set<Observer<T>>();
+
+    constructor(
+        emitter: Emitter<T>,
+        onSubscribe?: (observer: Observer<T>) => Finalize | void,
+    ) {
+        super(observer => {
+            this.#observers.add(observer);
+
+            let finalize: Finalize | void;
+
+            if (onSubscribe) finalize = onSubscribe(observer);
+
+            return () => {
+                this.#observers.delete(observer);
+
+                if (typeof finalize === "function") finalize();
+            };
         });
 
-        const subscribers = new Set<Subscriber<T>>();
-        const subscription = mediator.subscribe({
-            next(value) {
-                if (valueAccessor) valueAccessor.value = value;
+        Stream.#streams.set(emitter, this);
+    }
 
-                subscribers.forEach(subscriber => subscriber.next(value));
-            },
-            finalize() {
-                subscription.unsubscribe();
-            },
-        });
+    #next(value: T) {
+        this.#observers.forEach(observer => observer.next(value));
     }
 }
+
+export const createEmitter = Stream.createEmitter;

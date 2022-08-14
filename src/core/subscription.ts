@@ -1,4 +1,4 @@
-import { Finalize } from "./finalize.interface";
+import { Finalize } from "./finalize";
 
 export class Subscription {
     #finalize?: Finalize;

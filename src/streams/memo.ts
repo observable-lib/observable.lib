@@ -1,10 +1,19 @@
 import { ValueAccessor } from "value-accessor";
 
-import { Mediator } from "../core";
-import { Stream } from "./stream";
+import { Emitter, Stream } from "./stream";
 
 export class Memo<T> extends Stream<T> {
-    constructor(mediator: Mediator<T>) {
-        super(mediator, new ValueAccessor<T>());
+    #value = new ValueAccessor<T>();
+
+    constructor(emitter: Emitter<T>) {
+        super(emitter, ({ next }) => {
+            if (this.#value.hasValue) next(this.#value.value);
+        });
+
+        this.subscribe({
+            next: value => {
+                this.#value.value = value;
+            },
+        });
     }
 }

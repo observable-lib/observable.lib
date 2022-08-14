@@ -10,10 +10,24 @@ import {
     version,
 } from "npm-packagr/pipes";
 
-const message = require("./package.json").name;
-
 npmPackagr({
     pipeline: [
+        ({ exec, packageDirectory }) => {
+            exec(`tsc --outDir ${packageDirectory}`);
+        },
+
+        ({ rm }) => rm("-rf", "test"),
+
+        test(),
+
+        badge(BadgeType.Test),
+        badge(BadgeType.License),
+
+        version("prerelease", {
+            commitHooks: false,
+            gitTagVersion: false,
+        }),
+
         packageJSON(packageJson => {
             const dependencies = packageJson.devDependencies!;
 
@@ -26,25 +40,9 @@ npmPackagr({
             delete packageJson.scripts;
         }),
 
-        git("commit", message),
-
-        ({ exec, packageDirectory }) => {
-            exec(`tsc --outDir ${packageDirectory}`);
-        },
-
-        test(),
-
-        badge(BadgeType.Test),
-        badge(BadgeType.License),
-
-        version("prerelease", {
-            commitHooks: false,
-            gitTagVersion: false,
-        }),
-
         assets("LICENSE", "README.md"),
 
-        git("commit", message),
+        git("commit", require("./package.json").name),
         git("push"),
 
         publish({

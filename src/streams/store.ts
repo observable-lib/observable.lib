@@ -1,22 +1,17 @@
-import { ValueAccessor } from "value-accessor";
-
-import { Mediator } from "../core";
-import { Stream } from "./stream";
+import { Emitter, Stream } from "./stream";
 
 export class Store<T> extends Stream<T> {
-    get value() {
-        return this.#valueAccessor.value;
-    }
+    #value: T;
 
-    #valueAccessor: ValueAccessor<T>;
+    constructor(emitter: Emitter<T>, initial: T) {
+        super(emitter, ({ next }) => next(this.#value));
 
-    constructor(mediator: Mediator<T>, initial: T) {
-        const valueAccessor = new ValueAccessor<T>();
+        this.#value = initial;
 
-        valueAccessor.value = initial;
-
-        super(mediator, valueAccessor);
-
-        this.#valueAccessor = valueAccessor;
+        this.subscribe({
+            next: value => {
+                this.#value = value;
+            },
+        });
     }
 }
