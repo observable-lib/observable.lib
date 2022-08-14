@@ -5,7 +5,10 @@ export type Input = {
 };
 
 export type Output<Source extends Input> = {
-    [Property in keyof Source]: Source[Property] extends Observable<infer Value>
-        ? Value
+    [Property in keyof Source]: Source[Property] extends Observable<
+        unknown,
+        infer Out
+    >
+        ? Out
         : never;
 };

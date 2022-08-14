@@ -1,8 +1,7 @@
 import { Observable } from "../core";
-import { create } from "../utils";
 
 export function timeout(ms: number): Observable<void> {
-    return create(({ next, complete }) => {
+    return new Observable(({ next, complete }) => {
         const id = setTimeout(() => {
             next();
             complete();

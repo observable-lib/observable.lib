@@ -1,4 +1,9 @@
 export class Subscriber<T> {
+    next: (value: T) => void;
+    error: <Error>(error: Error) => void;
+    complete: () => void;
+    finalize: () => void;
+
     constructor(
         subscriber?:
             | Subscriber<T>
@@ -17,11 +22,6 @@ export class Subscriber<T> {
         this.complete = fn(source.complete);
         this.finalize = fn(source.finalize);
     }
-
-    next(value: T): void {}
-    error<Error>(error: Error): void {}
-    complete(): void {}
-    finalize(): void {}
 }
 
 function fn<T extends (...args: any[]) => void>(source?: T): T {

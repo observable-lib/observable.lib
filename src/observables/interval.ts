@@ -1,8 +1,7 @@
 import { Observable } from "../core";
-import { create } from "../utils";
 
 export function interval(ms: number): Observable<number> {
-    return create(({ next }) => {
+    return new Observable(({ next }) => {
         let counter = 0;
 
         const id = setInterval(() => next(counter++), ms);

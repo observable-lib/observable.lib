@@ -3,19 +3,19 @@ import { Observer } from "./observer";
 import { Subscriber } from "./subscriber";
 import { Subscription } from "./subscription";
 
-export class Observable<T> {
+export class Observable<In, Out = In> {
     #pipeline: Processor<any, any>[] = [];
-    #onSubscribe: (observer: Observer<T>) => Finalize | void;
+    #onSubscribe: (observer: Observer<Out>) => Finalize | void;
 
-    constructor(onSubscribe?: (observer: Observer<T>) => Finalize | void) {
+    constructor(onSubscribe?: (observer: Observer<Out>) => Finalize | void) {
         this.#onSubscribe = fn(onSubscribe);
     }
 
     subscribe(
         subscriber?:
-            | Subscriber<T>
-            | Partial<Subscriber<T>>
-            | Subscriber<T>["next"],
+            | Subscriber<Out>
+            | Partial<Subscriber<Out>>
+            | Subscriber<Out>["next"],
     ): Subscription {
         const target = new Subscriber(subscriber);
 
@@ -62,8 +62,10 @@ export class Observable<T> {
         return subscription;
     }
 
-    connect(source: Observable<T>): Observable<T> {
-        const observable = new Observable<T>();
+    connect<SourceIn>(
+        source: Observable<SourceIn, In>,
+    ): Observable<SourceIn, Out> {
+        const observable = new Observable<SourceIn, Out>();
 
         observable.#pipeline = source.#pipeline.concat(
             this.#toPipeline(),
@@ -73,16 +75,67 @@ export class Observable<T> {
         return observable;
     }
 
-    switchTo<Out>(
-        callbackOrObservable: (value: T) => Observable<Out> | Observable<Out>,
-    ): Observable<Out> {
-        return null as any;
-    }
-
-    pipe<Out, A, B, C, D, E, F, G, H, I, J, K>(
-        ...pipeline: Processors<T, Out, A, B, C, D, E, F, G, H, I, J, K>
-    ): Observable<Out> {
-        const observable = new Observable<Out>(observer => {
+    pipe<
+        TargetOut,
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L,
+        M,
+        N,
+        O,
+        P,
+        Q,
+        R,
+        S,
+        T,
+        U,
+        V,
+        W,
+        X,
+        Y,
+        Z,
+    >(
+        ...pipeline: Processors<
+            Out,
+            TargetOut,
+            A,
+            B,
+            C,
+            D,
+            E,
+            F,
+            G,
+            H,
+            I,
+            J,
+            K,
+            L,
+            M,
+            N,
+            O,
+            P,
+            Q,
+            R,
+            S,
+            T,
+            U,
+            V,
+            W,
+            X,
+            Y,
+            Z
+        >
+    ): Observable<In, TargetOut> {
+        const observable = new Observable<TargetOut>(observer => {
             const pipeline = new Pipeline(
                 observable.#pipeline.concat(() => observer),
             );
@@ -101,7 +154,17 @@ export class Observable<T> {
             pipeline,
         );
 
-        return observable;
+        return observable as any;
+    }
+
+    switchTo<ObservableIn, ObservableOut>(
+        callbackOrObservable: (
+            value: Out,
+        ) =>
+            | Observable<ObservableIn, ObservableOut>
+            | Observable<ObservableIn, ObservableOut>,
+    ): Observable<ObservableIn, ObservableOut> {
+        return null as any;
     }
 
     #toPipeline(): Processor<any, any> {
@@ -113,31 +176,32 @@ export class Observable<T> {
     }
 }
 
-export interface Processor<In, Out> {
+export interface Processor<In, Out = In> {
     (controller: Observer<Out>): Partial<Subscriber<In>>;
 }
 
 // Extensions
 
-export interface Observable<T> {
-    debounce(ms: number): Observable<T>;
-    distinct(): Observable<T>;
-    filter(predicate: (value: T) => boolean): Observable<T>;
-    first(): Observable<T>;
-    last(): Observable<T>;
-    map<U>(callback: (value: T) => U): Observable<U>;
-    onComplete(callback: () => void): Observable<T>;
-    onError(callback: <Error>(error: Error) => void): Observable<T>;
-    onFinalize(callback: () => void): Observable<T>;
-    onNext(callback: (value: T) => void): Observable<T>;
-    onSubscribe(callback: () => void): Observable<T>;
-    skip(quantity: number): Observable<T>;
-    switch<U>(callback: (value: T) => Observable<U>): Observable<U>;
-    take(quantity: number): Observable<T>;
-    toError<Error>(predicate: (value: T) => Error | void): Observable<T>;
+export interface Observable<In, Out> {
+    debounce(ms: number): Observable<In, Out>;
+    distinct(): Observable<In, Out>;
+    filter(predicate: (value: Out) => boolean): Observable<In, Out>;
+    first(): Observable<In, Out>;
+    last(): Observable<In, Out>;
+    map<T>(callback: (value: Out) => T): Observable<In, T>;
+    onComplete(callback: () => void): Observable<In, Out>;
+    onError(callback: <Error>(error: Error) => void): Observable<In, Out>;
+    onFinalize(callback: () => void): Observable<In, Out>;
+    onNext(callback: (value: Out) => void): Observable<In, Out>;
+    onSubscribe(callback: () => void): Observable<In, Out>;
+    skip(quantity: number): Observable<In, Out>;
+    take(quantity: number): Observable<In, Out>;
+    toError<Error>(
+        predicate: (value: Out) => Error | void,
+    ): Observable<In, Out>;
     until(
-        trigger: Observable<unknown> | ((value: T) => boolean),
-    ): Observable<T>;
+        trigger: Observable<unknown> | ((value: Out) => boolean),
+    ): Observable<In, Out>;
 }
 
 // Internal
@@ -256,7 +320,36 @@ interface QueueItem {
     value?: any;
 }
 
-type Processors<In, Out, A, B, C, D, E, F, G, H, I, J, K> =
+type Processors<
+    In,
+    Out,
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
+> =
     | [Processor<In, Out>]
     | [Processor<In, A>, Processor<A, Out>]
     | [Processor<In, A>, Processor<A, B>, Processor<B, Out>]
@@ -344,4 +437,334 @@ type Processors<In, Out, A, B, C, D, E, F, G, H, I, J, K> =
           Processor<I, J>,
           Processor<J, K>,
           Processor<K, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, U>,
+          Processor<U, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, U>,
+          Processor<U, V>,
+          Processor<V, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, U>,
+          Processor<U, V>,
+          Processor<V, W>,
+          Processor<W, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, U>,
+          Processor<U, V>,
+          Processor<V, W>,
+          Processor<W, X>,
+          Processor<X, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, U>,
+          Processor<U, V>,
+          Processor<V, W>,
+          Processor<W, X>,
+          Processor<X, Y>,
+          Processor<Y, Out>,
+      ]
+    | [
+          Processor<In, A>,
+          Processor<A, B>,
+          Processor<B, C>,
+          Processor<C, D>,
+          Processor<D, E>,
+          Processor<E, F>,
+          Processor<F, G>,
+          Processor<G, H>,
+          Processor<H, I>,
+          Processor<I, J>,
+          Processor<J, K>,
+          Processor<K, L>,
+          Processor<L, M>,
+          Processor<M, N>,
+          Processor<N, O>,
+          Processor<O, P>,
+          Processor<P, Q>,
+          Processor<Q, R>,
+          Processor<R, S>,
+          Processor<S, T>,
+          Processor<T, U>,
+          Processor<U, V>,
+          Processor<V, W>,
+          Processor<W, X>,
+          Processor<X, Y>,
+          Processor<Y, Z>,
+          Processor<Z, Out>,
       ];
